@@ -1,0 +1,9 @@
+/back/application.yaml
+**/__pycache__
+/.vscode
+/back/face_db/
+/temp/
+/upload/
+/front/dist/
+/front/node_modules/
+/back/models
