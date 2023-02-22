@@ -13,7 +13,7 @@
       <el-menu-item index="/landmarks" >人脸精细分割</el-menu-item>
     </el-sub-menu>
     <el-menu-item index="/videoshow">视频流接入</el-menu-item>
-    <el-menu-item index="3">人脸信息管理</el-menu-item>
+    <el-menu-item index="/manage">人脸信息管理</el-menu-item>
     <el-menu-item index="4">关于我们</el-menu-item>
   </el-menu>
 </template>

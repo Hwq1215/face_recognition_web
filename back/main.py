@@ -46,8 +46,6 @@ def find_face():
         src_url = 'http://' + str(config.server()['domain']) + '/image?uuid=' + produce_file_uuid
     return src_url
 
-
-
 @app.route('/webvideo')
 def web_video():
     url = request.args.get('url')
@@ -73,6 +71,18 @@ def compare():
     if data == '_error_':
         return {'is_same':False,'score':-1}  
     return data
+
+@app.route("/slice",methods=['POST'])
+def slice():
+    img = request.files['img']
+    img_path = os.path.join(app.config['UPLOAD_FOLDER'], uuid.uuid1().__str__()[0:9] + secure_filename(img.filename))
+    img.save(img_path)
+    data = api.slice_face(img_path)
+    if type(config.server()['domain']) != str:
+        src_url = 'http://' + str(config.server()['ip']) + ':' + str(config.server()['port']) + '/image?uuid=' + data
+    else:
+        src_url = 'http://' + str(config.server()['domain']) + '/image?uuid=' + data
+    return src_url
 
 if __name__ == '__main__':
     app.config['UPLOAD_FOLDER'] = config.upload()

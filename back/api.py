@@ -98,10 +98,11 @@ def find_faces_in_image(imgPath):
     opencv_recongition_alg(frame,frame_size=1000000)
     # # return base64_str of image
     uuid_str = uuid.uuid1().__str__()
-    filename =  uuid_str + ".jpg" 
+    filename =  uuid_str + ".jpg"
     filepath = os.path.join(config.upload(),filename)
     cv2.imwrite(filepath,frame)
     return uuid_str
+
 
 def web_video_is_effective(url):
     try:
@@ -130,7 +131,7 @@ def find_faces_in_web_video(url,FAS = False):
 
 def compare_two_faces(imgPath1,imgPath2):
     img1 = cv2.imread(imgPath1)
-    img2 = cv2.imread(imgPath2)
+    img2 = cv2.imread(imgPath2) 
     result1 = select_large_face_encoding(img1)
     result2 = select_large_face_encoding(img2)
     if(result1 is None or result2 is None):
@@ -141,3 +142,51 @@ def compare_two_faces(imgPath1,imgPath2):
             "is_same": face_recognition.feature_compare(result1['embedding'],result2['embedding']),
             "score": distances
         }
+
+def slice_face(imgPath):
+    img = cv2.imread(imgPath)
+    detected_faces = face_recognition.detect(img)
+    if(len(detected_faces) == 0):
+        return '_error_'
+    else:
+        mask = np.zeros((img.shape[0],img.shape[1],3),np.uint8)        
+        img_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+        area = []
+        for detected_face in detected_faces:
+            landmarks = detected_face['landmark_3d_68']
+                #求出两个中点
+            left_center_point = ((landmarks[0][0] + landmarks[19][0])/2-2,(landmarks[0][1] + landmarks[19][1])/2-2)
+            right_center_point = ((landmarks[16][0] + landmarks[24][0])/2-2,(landmarks[16][1] + landmarks[24][1])/2-2)
+            for i in range(0,16):
+                cv2.line(mask,(int(landmarks[i][0]),int(landmarks[i][1])),(int(landmarks[i+1][0]),int(landmarks[i+1][1])),(255,255,255),1)
+            cv2.line(mask,(int(left_center_point[0]),int(left_center_point[1])),(int(landmarks[0][0]),int(landmarks[0][1])),(255,255,255),1)
+            cv2.line(mask,(int(right_center_point[0]),int(right_center_point[1])),(int(landmarks[16][0]),int(landmarks[16][1])),(255,255,255),1)
+            cv2.line(mask,(int(landmarks[19][0]),int(landmarks[19][1])),(int(landmarks[24][0]),int(landmarks[24][1])),(255,255,255),1)
+            cv2.line(mask,(int(left_center_point[0]),int(left_center_point[1])),(int(landmarks[19][0]),int(landmarks[19][1])),(255,255,255),1)
+            cv2.line(mask,(int(right_center_point[0]),int(right_center_point[1])),(int(landmarks[24][0]),int(landmarks[24][1])),(255,255,255),1)
+        
+        img_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+        t, img_gray = cv2.threshold(img_gray, 127, 255, cv2.THRESH_BINARY)
+        # findContours 应该用灰度图，不然会报错
+        contours, hierarchy = cv2.findContours(img_gray, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+        for k in range(len(contours)):
+            area.append(cv2.contourArea(contours[k]))
+        # 轮廓索引
+        max_idx = np.argsort(np.array(area))
+            
+         #对原图像进行轮廓填充，也就是扣除人脸图像
+        #res_img = np.zeros((img.shape[0],img.shape[1],3),np.uint8)
+        # 按轮廓索引填充颜色
+        for idx in max_idx:
+            # 填充轮廓
+            mask = cv2.drawContours(mask, contours, idx, (255,255,255), cv2.FILLED)
+        mask = cv2.bitwise_and(img, mask)
+        # cv2.imshow('mask',mask)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        file_uuid = str(uuid.uuid1())
+        file_name = file_uuid + ".jpg"         
+        cv2.imwrite(os.path.join(config.upload(),file_name),mask)
+        return file_uuid
+            
+                

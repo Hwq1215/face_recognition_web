@@ -1,9 +1,14 @@
 /back/application.yaml
 **/__pycache__
-/.vscode
+**/.vscode
 /back/face_db/
 /temp/
 /upload/
 /front/dist/
 /front/node_modules/
 /back/models
+/back/FAS/model/SSAN-F_p1_best.pth
+/back/FAS/model/SSAN-F_p3_best.pth
+/back/FAS/model/SSAN-R_p2_best.pth
+/back/FAS/model/SSAN-R_p1_best.pth
+/back/FAS/model/SSAN-R_p20_best.pth

@@ -5,6 +5,7 @@ import bootstrap from '../views/bootstrap.vue'
 import videoShow from '../views/videoShow.vue'
 import compareFace from '../views/compareFace.vue' 
 import landmarks from '../views/landmarks.vue'
+import manage from '../views/manage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +39,10 @@ const router = createRouter({
           path: 'videoshow',
           name: 'videoShow',
           component: videoShow
+        },{
+          path: 'manage',
+          name: 'manage',
+          component: manage
         }
       ]
     },

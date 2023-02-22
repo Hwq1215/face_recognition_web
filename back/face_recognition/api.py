@@ -136,7 +136,7 @@ class FaceRecognition:
             result["bbox"] = np.array(face.bbox).astype(np.int32).tolist()
             result["kps"] = np.array(face.kps).astype(np.int32).tolist()
             result["landmark_3d_68"] = np.array(face.landmark_3d_68).astype(np.int32).tolist()
-            result["landmark_2d_106"] = np.array(face.landmark_2d_106).astype(np.int32).tolist()
+            result["landmark_2d_100"] = np.array(face.landmark_2d_106).astype(np.int32).tolist()
             result["pose"] = np.array(face.pose).astype(np.int32).tolist()
             result["age"] = face.age
             gender = '男'
