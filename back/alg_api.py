@@ -1,5 +1,4 @@
 import face_recognition
-import dbconnect
 import numpy as np
 import uuid
 import config
@@ -19,24 +18,6 @@ RED = (0, 0, 255)
 
 def select_large_face_encoding(face_image):
         return face_recognition.detect_lagest(face_image)
-
-
-def save_img_encoding(name,imgPath):
-    img = cv2.imread(imgPath)
-    result = select_large_face_encoding(img)
-    if(result is None):
-        return False
-    else:
-        res = face_recognition.register(img,name)
-        if res == "success":
-            face_data=(
-                str(name),
-                imgPath
-            )
-            sql = "insert into face_info(face_name,np_name) values(%s,%s)"
-            dbconnect.insert(sql,face_data)
-            return True
-    return False
 
 def recongition(imgPath):
     img = cv2.imread(imgPath)

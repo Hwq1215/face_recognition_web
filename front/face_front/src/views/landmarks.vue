@@ -66,7 +66,7 @@
 
 <script>
 import { Picture as IconPicture ,SuccessFilled,CircleCloseFilled,Loading} from '@element-plus/icons-vue'
-import { httpurl } from '../../public/config';
+import { httpurl } from '@/config';
 import axios from 'axios';
 
 export default{

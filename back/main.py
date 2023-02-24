@@ -4,12 +4,14 @@ import config
 import os
 import uuid
 from werkzeug.utils import secure_filename
-import api
+import alg_api as api
 from flask_cors import *
 import urllib
-import math
+from flask_siwadoc import SiwaDoc
 
 app = Flask(__name__)
+siwa = SiwaDoc(app)
+
 CORS(app, supports_credentials=True)
 
 @app.route("/",methods = ['GET'])
@@ -17,6 +19,7 @@ def check():
     return "i am run in %s" % config.server()['host']
 
 @app.route("/upload",methods=['POST'])
+@siwa.doc()
 def face_save():   
     f = request.files['imgfile']
     f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
@@ -25,6 +28,7 @@ def face_save():
     return 'file uploaded sucessfully'
 
 @app.route("/image",methods=['GET'])
+@siwa.doc()
 def sendimage():
     img_name = request.args.get('uuid') + '.jpg'
     img_local = os.path.join(app.config['UPLOAD_FOLDER'],img_name)
@@ -35,6 +39,7 @@ def sendimage():
     return res
 
 @app.route("/findface",methods=['POST'])
+@siwa.doc()
 def find_face():
     f = request.files['imgfile']
     path = os.path.join(app.config['UPLOAD_FOLDER'], uuid.uuid1().__str__()[0:9] + secure_filename(f.filename))
@@ -47,6 +52,7 @@ def find_face():
     return src_url
 
 @app.route('/webvideo')
+@siwa.doc()
 def web_video():
     url = request.args.get('url')
     url = urllib.parse.unquote(url)
@@ -60,6 +66,7 @@ def web_video():
     return Response(api.find_faces_in_web_video(url,FAS = isOpenFAS),mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route("/compare",methods=['POST'])
+@siwa.doc()
 def compare():
     img1 = request.files['img1']
     img2 = request.files['img2']
@@ -73,6 +80,7 @@ def compare():
     return data
 
 @app.route("/slice",methods=['POST'])
+@siwa.doc()
 def slice():
     img = request.files['img']
     img_path = os.path.join(app.config['UPLOAD_FOLDER'], uuid.uuid1().__str__()[0:9] + secure_filename(img.filename))
@@ -84,11 +92,32 @@ def slice():
         src_url = 'http://' + str(config.server()['domain']) + '/image?uuid=' + data
     return src_url
 
+@app.route("/manage/upload",methods=['GET'])
+def manageUpload():
+    return 
+@app.route("/manage",methods=['POST'])
+
+def manage():
+    return 
+@app.route("/manage",methods=['POST'])
+
+def manage():
+    return 
+@app.route("/manage",methods=['POST'])
+
+def manage():
+    return 
+@app.route("/manage",methods=['POST'])
+
+def manage():
+    return 
 if __name__ == '__main__':
     app.config['UPLOAD_FOLDER'] = config.upload()
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
     app.run(config.server()['host'],
             config.server()['port'],
             config.server()['debug'],
             True)
+    
 

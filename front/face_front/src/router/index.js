@@ -39,11 +39,12 @@ const router = createRouter({
           path: 'videoshow',
           name: 'videoShow',
           component: videoShow
-        },{
+        },
+        {
           path: 'manage',
           name: 'manage',
           component: manage
-        }
+        },
       ]
     },
   ]

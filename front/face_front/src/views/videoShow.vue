@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { httpurl } from '../../public/config'
+import { httpurl } from '@/config'
 
 export default{
     name: 'videoShow',

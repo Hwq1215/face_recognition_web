@@ -22,7 +22,7 @@
 import axios from 'axios'
 import { ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
-import { httpurl } from '../../public/config'
+import { httpurl } from '@/config'
 
 export default {
     data() {
