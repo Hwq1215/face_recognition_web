@@ -23,7 +23,8 @@
         
         <div class="mid-img-container">
             <div>
-
+                <h4>开启关键点检测<el-switch v-model="keyPoint"></el-switch></h4>
+                
             </div>
             <div>
                 <el-button type="success" size="large" @click="slice">生成</el-button>
@@ -65,7 +66,7 @@
 </template>
 
 <script>
-import { Picture as IconPicture ,SuccessFilled,CircleCloseFilled,Loading} from '@element-plus/icons-vue'
+import { Picture as IconPicture ,SuccessFilled,CircleCloseFilled,Loading, Switch} from '@element-plus/icons-vue'
 import { httpurl } from '@/config';
 import axios from 'axios';
 
@@ -83,6 +84,7 @@ export default{
             img2Url: '',
             DialogIsVisiable: false,
             loadingVisible: true,
+            keyPoint: true,
         }
     },
     watch:{
@@ -98,11 +100,12 @@ export default{
         }
     },
     components: {
-        IconPicture,
-        SuccessFilled,
-        CircleCloseFilled,
-        Loading
-    },
+    IconPicture,
+    SuccessFilled,
+    CircleCloseFilled,
+    Loading,
+    Switch
+},
     methods:{
         slice(){
             this,this.loadingVisible = true;
@@ -114,6 +117,7 @@ export default{
                 return;
             }
             fd.append('img', this.fileList1[0].raw);
+            fd.append('keypoint', this.keyPoint);
             axios({
                 method:'post',
                 url:this.actionUrl,

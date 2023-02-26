@@ -1,11 +1,11 @@
 <template>
-
-
-    <el-button class="btn-add" @click="handleAdd()">
-        <el-icon><Plus /></el-icon>
-    </el-button>
+    <el-row gutter="2">
+        <el-col :span="22" :offset="1" > 
+    <el-card class="box-card">
+        <h3><center>人脸信息</center></h3>  
     <el-table 
     :data="facesData" 
+    style="margin: 0;"
     >
     
         <el-table-column type="expand">
@@ -13,11 +13,11 @@
             <img class="face-img" :src="scope.src"/>
             </template>
         </el-table-column>
-        <el-table-column prop="index" label="" width="300" type="index">
+        <el-table-column prop="index" label="" width="350" type="index">
         </el-table-column>
-        <el-table-column prop="name" label="姓名" width="400"></el-table-column>
-        <el-table-column prop="fake" label="欺诈识别" width="400"></el-table-column>
-        <el-table-column  label="操作">
+        <el-table-column prop="name" label="姓名" width="350"></el-table-column>
+        <!-- <el-table-column prop="fake" label="欺诈识别" width="400"></el-table-column> -->
+        <el-table-column  label="操作" width="700">
             <template #default="scope">
             <el-button size="small" @click="handleEdit(scope.$index, scope.row)"
             >编辑</el-button
@@ -31,19 +31,60 @@
             </template>
         </el-table-column>
     </el-table>
+    <el-button class="btn-add" @click="handleAdd()">
+        <el-icon><Plus /></el-icon>
+    </el-button>
     <div class="page-item">
         
         <el-pagination
-        :page-size="14"
+        :page-size="pageSize"
         :pager-count="5"
+        v-model:current-page="currentPage"
         background
         layout="prev, pager, next"
         :total="total"
         class="mt-4"
     />
     </div>
+    </el-card>
+        </el-col>
+    </el-row >
+    <el-row gutter="2" style="margin-top: 50px;">
+        <el-col :span="22" :offset="1">
+            <el-card>
+                <h3><center>欺诈记录</center></h3>  
+                <el-table
+                :data="fakeData"
+                >
+                <el-table-column prop="index" label="" width="250" type="index">
+                </el-table-column>
+                <el-table-column prop="name" label="识别姓名" width="250"></el-table-column>
+                <el-table-column prop="time" label="时间" width="250"></el-table-column>
+                <el-table-column prop="fake" label="欺诈类型" width="250"></el-table-column>
+                <el-table-column prop="imgSrc" label="欺诈图片" width="250">
+                    <template #default="scope">
+                        <el-button type="text" @click="handleImg(scope.$index, scope.row)">查看</el-button>
+                    </template>
+                </el-table-column>
+                </el-table>
+        <div class="page-item">
+            <el-pagination
+            :page-size="pageSize"
+            :pager-count="5"
+            background
+            layout="prev, pager, next"
+            :total="2"
+            class="mt-4"
+        />
+        </div>  
+            </el-card>
+
+        </el-col>
+
+    </el-row>
+    
     <!-- 更新面板 -->
-    <el-dialog v-model="EditDialogIsVisiable" title="修改">
+    <el-dialog v-model="DialogIsVisiable" :title="editChoose?'修改':'上传'">
         <el-form>
             <el-form-item label="姓名">
                 <el-input v-model="chooseItem.name"></el-input>
@@ -54,23 +95,24 @@
                     <el-icon size="20" v-else><Picture/></el-icon>
                 </div>
                 <div style="margin-top: 0px; margin-left: 20px;" >
-                    <input @change="showImg($event)" ref="inputImg" class="input-hiden" hidden type="file"/><br>
-                    <el-button type="success" @click="handleUpdate()">录制<el-icon size="17"><VideoCameraFilled /></el-icon></el-button>
+                    <input @change="showImg($event)"  ref="inputImg" class="input-hiden" hidden type="file"/><br>
+                    <el-button type="success" @click="">录制<el-icon size="17"><VideoCameraFilled /></el-icon></el-button>
                 </div>
                 
                 </el-form-item>
-            <el-form-item>
-                    <el-button type="primary" @click="handleUpdate()">确认</el-button>
-                    <el-button type="danger" @click="EditDialogIsVisiable = false">取消</el-button>
+            <el-form-item >
+                    <el-button v-if="editChoose" type="primary" @click="updateFaceData()">确认</el-button>
+                    <el-button v-else type="primary" @click="addFaceData()">确认</el-button>
+                    <el-button type="danger" @click="DialogIsVisiable = false">取消</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
+
 </template>
 
 <script>
 import {getFacesData,getFacesTotal,deleteFaceData} from "@/api/getData";
-import { extend } from "@vue/shared";
-import { Plus,Picture as IconPicture, Picture, Upload} from '@element-plus/icons-vue'
+import { Plus,Picture as IconPicture, Picture, Upload, Refresh} from '@element-plus/icons-vue'
 import {httpurl} from "@/config"
 import axios from "axios";
     export default{
@@ -78,13 +120,14 @@ import axios from "axios";
         return {
             total: 100,
             currentPage: 1,
-            EditDialogIsVisiable: false,
-            ADDDialogIsVisiable: false,
+            DialogIsVisiable: false,
+            editChoose: true,
             imageUrl: "",
+            pageSize: 7,
+            reFresh : true,
             chooseItem: {
                 faceId: 0,
                 name: "",
-                fake: "",
                 imgSrc: "",
                 files: undefined
             },
@@ -97,39 +140,68 @@ import axios from "axios";
                     name: "李四",
                     fake: "否"
                 }
-            ]
+            ],
+            fakeData:[
+                {
+                    name: "张三",
+                    time: "2021-05-01",
+                    fake: "是",
+                    imgSrc: "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1620000000&di=1b1f1b1f1b1f1b1f1b1f1b1f1b1f1b1f&imgtype=jpg&er=1&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01e4e756e5b9fba801219c77f3b5b6.jpg%401280w_1l_2o_100sh.jpg"
+                },
+                {
+                    name: "李四",
+                    time: "2021-05-01",
+                    fake: "否",
+                    imgSrc: "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1620000000&di=1b1f1b1f1b1f1b1f1b1f1b1f1b1f1b1f&imgtype=jpg&er=1&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01e4e756e5b9fba801219c77f3b5b6.jpg%401280w_1l_2o_100sh.jpg"
+                }
+            ],
         };
     },
+    created() {
+        this.init();
+    },
     components:{
-        Plus,
-        IconPicture
-    },
-    init() {
-        this.getFacesTotal();
-        this.HandlePageSelect(1);
-    },
+    Plus,
+    IconPicture,
+    Refresh
+},
     watch: {
         currentPage(val) {
-            this.HandlePageSelect(val);
+            this.handlePageSelect(val);
         }
     },
     methods: {
+        init(){
+            this.getFacesTotal();
+            this.getFacesInPage(this.currentPage);
+        },
         handlePageSelect(currentPage) {
             this.getFacesInPage(currentPage);
         },
         handleEdit(index,row){
             this.factoryChooseItem(row);
-            this.EditDialogIsVisiable = true;
+            this.editChoose = true;
+            this.DialogIsVisiable = true;
         },
-        handleUpdate(){
-            this.UploadFaceData();
+        updateFaceData(){
+            this.UpDateFaceData()
+            setTimeout(() => {
+                this.init()
+            }, 1000);
         },
         handleDelete(index,row){
-            this.deleteFaceData(row.faceId);
+            this.deleteFaceData(row);
         },
         handleAdd(){
             this.initChooseItem();
-            this.EditDialogIsVisiable = true;
+            this.editChoose = false
+            this.DialogIsVisiable = true;
+        },
+        addFaceData(){
+            this.UploadFaceData();
+            setTimeout(()=>{
+                this.init();
+            },1000)
         },
         handleInsert(){
             this.addFaceData();
@@ -138,19 +210,39 @@ import axios from "axios";
             this.total = await getFacesTotal();
         },
         async getFacesInPage(currentpage) {
-            this.facesData = await getFacesData(currentpage);
+            this.facesData = await getFacesData({
+                "page":currentpage,
+                "pageSize":this.pageSize
+            });
         },
-        async deleteFaceData(faceId){
-            await deleteFaceData(faceId);
-            this.getFacesTotal();
-            this.HandlePageSelect(this.currentPage);
+        async deleteFaceData(row){
+            var results = await deleteFaceData({
+                "faceId": row.faceId
+                });
+            console.log(results);
+            if(results.msg=='success'){
+                this.$message({
+                    message: '删除成功',
+                    type: 'success'
+                });
+            }
+            else{
+                this.$message({
+                    message: '删除失败',
+                    type: 'error'
+                });
+            }   
+            this.facesData.forEach((item,index)=>{
+                if(item.faceId==row.faceId){
+                    this.facesData.splice(index,1);
+                }
+            })
         },
         initChooseItem(){
             this.chooseItem = {
                 faceId: 0,
                 name: "",
                 fake: "",
-                imgSrc: "",
                 files: undefined
             };
         },
@@ -173,21 +265,16 @@ import axios from "axios";
                 that.chooseItem.imgSrc = this.result;//赋值
                 that.chooseItem.files = files;
             }
-        //     let param = new FormData(); //转换为表单进行发送给后端
-        //     param.append("imgFile", files); //第一个参数就是后端要接受的字段，要一样，不一样会发送失败
-        //     Axios.post(this.$api.ip,param).then((data)=>{
-        //         console.log(data);
-        // })
         },
         UploadFaceData(){
             try{
                 let fd = new FormData(); //转换为表单进行发送给后端
-                fd.append('faceId',this.chooseItem.faceId)
                 fd.append('name',this.chooseItem.name)
-                fd.append("imgFile", this.chooseItem.files); //第一个参数就是后端要接受的字段，要一样，不一样会发送失败
+                fd.append("imgfile", this.chooseItem.files); //第一个参数就是后端要接受的字段，要一样，不一样会发送失败
+                console.log(fd);
                 axios({
                     method:'post',
-                    url:this.httpurl+'/manage/upload',
+                    url:httpurl+'/manage/add',
                     headers:{'Content-Type':'multipart/form-data',
                             "Access-Control-Allow-Origin": "*"},
                     data:fd,
@@ -197,17 +284,73 @@ import axios from "axios";
                             message: '上传成功',
                             type: 'success'
                         });
-                        this.facesData.find((item)=>{
-                        if(item.faceId == this.chooseItem.faceId){
-                            item.name = this.chooseItem.name;
-                            item.imgSrc = this.chooseItem.imgSrc;
-                        }
-                    })
+                    // this.facesData.find((item)=>{
+                    // if(item.faceId == this.chooseItem.faceId){
+                    //     item.name = this.chooseItem.name;
+                    //     item.imgSrc = this.chooseItem.imgSrc;
+                    //     }
+                    // })
+                    }else{
+                        this.$message({
+                            message: '上传失败',
+                            type: 'error'
+                        });
                     }
                 })
             }
+            catch(e){
+                this.$message({
+                    message: '错误',
+                    type: 'error'
+                });
+                console.log(e);
+            }
             finally{
-                this.EditDialogIsVisiable = false;
+                this.DialogIsVisiable = false;
+                this.initChooseItem();
+            }
+        },
+        UpDateFaceData(){
+            try{
+                let fd = new FormData(); //转换为表单进行发送给后端
+                fd.append('faceId',this.chooseItem.faceId)
+                fd.append('name',this.chooseItem.name)
+                fd.append("imgfile", this.chooseItem.files); //第一个参数就是后端要接受的字段，要一样，不一样会发送失败
+                console.log(fd);
+                axios({
+                    method:'post',
+                    url:httpurl+'/manage/update',
+                    headers:{'Content-Type':'multipart/form-data',
+                            "Access-Control-Allow-Origin": "*"},
+                    data:fd,
+                }).then((res)=>{
+                    if(res.status == 200){
+                        this.$message({
+                            message: '上传成功',
+                            type: 'success'
+                        });
+                    this.facesData.find((item)=>{
+                    if(item.faceId == this.chooseItem.faceId){
+                        item.name = this.chooseItem.name;
+                        item.imgSrc = this.chooseItem.imgSrc;
+                        }
+                    })
+                    }else{
+                        this.$message({
+                            message: '上传失败',
+                            type: 'error'
+                        });
+                    }
+                })
+            }catch(e){
+                this.$message({
+                    message: '错误',
+                    type: 'error'
+                });
+                console.log(e);
+            }
+            finally{
+                this.DialogIsVisiable = false;
                 this.initChooseItem();
             }
         },
@@ -236,7 +379,7 @@ import axios from "axios";
         color: white;
         border: none;
         font-size: small;
-        border-radius: 5px;
+        border-radius:5px;
         
     }
     .avatar-uploader .avatar {
@@ -263,5 +406,7 @@ import axios from "axios";
     .input-hiden{
        margin-left: 30px;
     }
-
+    .box-card{
+        margin-top: 20px;
+    }
 </style>

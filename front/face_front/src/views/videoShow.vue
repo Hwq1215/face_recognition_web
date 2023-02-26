@@ -16,7 +16,13 @@
                 <el-button type="danger" @click="dialogImageUrl = false" >取消</el-button>
             </el-form-item>
             </el-form>
-        </el-dialog>
+        </el-dialog >
+        <!-- <el-dialog v-model="openVar" title="警告" width="400px" center>
+           
+            <el-icon color="red"><warning/></el-icon>
+            <span> 欺诈识别已记录，请勿进行欺诈识别</span>
+        </el-dialog> -->
+
         <img  v-if="videoShow" class="index-img" :src="requestUrl" alt="">
         </div>
     </div>
@@ -35,7 +41,8 @@ export default{
             videoUrl:'',
             actionUrl: httpurl+'/webvideo',
             requestUrl: '',
-            isOpenFAS: true
+            isOpenFAS: true,
+            openVar: true,
     }
     },
     created(){

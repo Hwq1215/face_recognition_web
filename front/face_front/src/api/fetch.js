@@ -1,4 +1,5 @@
-const baseUrl = "127.0.0.1:5006";
+import { httpurl } from "@/config";
+const baseUrl = httpurl;
 
 export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
 	var chooseUrl;
