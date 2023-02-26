@@ -10,14 +10,14 @@ This is a development example of secure face recognition system that front and r
 ### 1. Install the dependencies
 ```bash
 pip install -r requirements.txt
-cd ./front
+cd ./front/face_front
 npm install
 ```
 ### 2.Start the server
 ```bash
-cd ./front
+cd ./front/face_front
 npm run dev
-cd ../
+cd ../../
 cd ./back
 python main.py
 ```
