@@ -20,7 +20,8 @@ default_dataset = {
   "database": "face_recongition"
 }
 
-FacesPath = "./faces"
+default_FacesPath = "./faces"
+
 data = []
 
 with open(ConfigPath,'r',encoding='utf-8') as f:
@@ -53,10 +54,24 @@ def FAS_model_path():
 
 def FacesPath():
     if data['FacesPath'] is not None:
-        FacesPath = data['FacesPath']
-    if os.path.exists(FacesPath) == False:
-        os.mkdir(FacesPath)
-    return FacesPath
+        default_FacesPath = data['FacesPath']
+    if os.path.exists(default_FacesPath) == False:
+        os.mkdir(default_FacesPath)
+    return default_FacesPath
+
+def imgUrl(data):
+    if type(server()['domain']) != str:
+        src_url = 'http://' + str(server()['ip']) + ':' + str(server()['port']) + '/image?uuid=' + data
+    else:
+        src_url = 'http://' + str(server()['domain']) + '/image?uuid=' + data
+    return src_url
+
+def faceUrl(data):
+    if type(server()['domain']) != str:
+        src_url = 'http://' + str(server()['ip']) + ':' + str(server()['port']) + '/face?name=' + data
+    else:
+        src_url = 'http://' + str(server()['domain']) + '/face?uuid=' + data
+    return src_url
 
 if (__name__ == '__main__'):
     print(data)

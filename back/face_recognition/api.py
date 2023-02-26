@@ -39,14 +39,18 @@ class FaceRecognition:
             os.makedirs(face_db_path)
         for root, dirs, files in os.walk(face_db_path):
             for file in files:
+                if file.endswith(".jpg"):
+                    continue
                 input_image = cv2.imdecode(np.fromfile(os.path.join(root, file), dtype=np.uint8), 1)
-                user_name = file.split(".")[0]
+                file_name = file.split(".")[0]
                 #防止图片重名
-                user_name = user_name.split("#")[0]
+                user_name = file_name.split("-")[0]
+                face_id = file_name.split("-")[1]
                 face = self.model.get(input_image)[0]
                 embedding = np.array(face.embedding).reshape((1, -1))
                 embedding = preprocessing.normalize(embedding)
                 self.faces_embedding.append({
+                    "face_id": face_id,
                     "user_name": user_name,
                     "feature": embedding
                 })
@@ -103,10 +107,16 @@ class FaceRecognition:
 
 
     # 注册人脸
-    def register(self, image, user_name):
+    # return ('hadexist','') 人脸已存在
+    # return ('morefind','') 人脸库中存在多张人脸
+    # return ('nofind','') 人脸库中不存在人脸
+    # return ('success',path) 注册成功,返回图片路径
+    def register(self, image,face_id,user_name):
         faces = self.model.get(image)
-        if len(faces) != 1:
-            return 'notfind'
+        if len(faces) == 0:
+            return ('nofind','')
+        elif len(faces) > 1:
+            return ('morefind','')
         # 判断人脸是否存在
         embedding = np.array(faces[0].embedding).reshape((1, -1))
         embedding = preprocessing.normalize(embedding)
@@ -116,16 +126,35 @@ class FaceRecognition:
             if r:
                 is_exits = True
         if is_exits:
-            return 'hadexist'
+            return ('hadexist','')
         # 符合注册条件保存图片，同时把特征添加到人脸特征库中
-        # 使用4位uuid防止图片重名
-        cv2.imencode('.png', image)[1].tofile(os.path.join(self.face_db, '%s.png' % (user_name + '#' + str(uuid.uuid1())[0:4]) ))
+        file_name = '%s.png' % (user_name + '-' + str(face_id))
+        path = os.path.join(self.face_db,file_name)
+        cv2.imencode('.png', image)[1].tofile(path)
         self.faces_embedding.append({
+            "face_id": face_id,
             "user_name": user_name,
             "feature": embedding
         })
-        return "success"
-
+        return ("success",file_name)
+    
+    # 删除人脸
+    def delete(self,face_id):
+        for embedding in self.faces_embedding:
+            if embedding['face_id'] == face_id:
+                self.faces_embedding.remove(embedding)
+        for root, dirs, files in os.walk(self.face_db):
+            for file in files:
+                if file.endswith(".jpg"):
+                    continue
+                file_name = file.split(".")[0]
+                #防止图片重名
+                f_face_id = file_name.split("-")[1]
+                # print(str(f_face_id) + ":: " + face_id)
+                if str(f_face_id) == str(face_id):
+                    os.remove(os.path.join(root, file))
+                    break
+    
     # 检测人脸
     def detect(self, image):
         faces = self.model.get(image)

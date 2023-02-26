@@ -8,6 +8,8 @@ import alg_api as api
 from flask_cors import *
 import urllib
 from flask_siwadoc import SiwaDoc
+import manage_api
+import json
 
 app = Flask(__name__)
 siwa = SiwaDoc(app)
@@ -38,6 +40,17 @@ def sendimage():
     img_file.close()
     return res
 
+@app.route("/face",methods=['GET'])
+@siwa.doc()
+def sendfaceimage():
+    img_name = request.args.get('name')
+    img_local = os.path.join(config.FacesPath(),img_name)
+    img_file = open(img_local,"rb")
+    res = make_response(img_file.read())
+    res.headers['Content-Type'] = 'image/jpg'
+    img_file.close()
+    return res
+
 @app.route("/findface",methods=['POST'])
 @siwa.doc()
 def find_face():
@@ -45,11 +58,7 @@ def find_face():
     path = os.path.join(app.config['UPLOAD_FOLDER'], uuid.uuid1().__str__()[0:9] + secure_filename(f.filename))
     f.save(path)
     produce_file_uuid = api.find_faces_in_image(path)
-    if type(config.server()['domain']) != str:
-        src_url = 'http://' + str(config.server()['ip']) + ':' + str(config.server()['port']) + '/image?uuid=' + produce_file_uuid
-    else:
-        src_url = 'http://' + str(config.server()['domain']) + '/image?uuid=' + produce_file_uuid
-    return src_url
+    return config.imgUrl(produce_file_uuid)
 
 @app.route('/webvideo')
 @siwa.doc()
@@ -83,38 +92,76 @@ def compare():
 @siwa.doc()
 def slice():
     img = request.files['img']
+    key_point = request.form['keypoint']
+    if key_point == 'true':
+        key_point = True
+    else:
+        key_point = False
     img_path = os.path.join(app.config['UPLOAD_FOLDER'], uuid.uuid1().__str__()[0:9] + secure_filename(img.filename))
     img.save(img_path)
-    data = api.slice_face(img_path)
-    if type(config.server()['domain']) != str:
-        src_url = 'http://' + str(config.server()['ip']) + ':' + str(config.server()['port']) + '/image?uuid=' + data
-    else:
-        src_url = 'http://' + str(config.server()['domain']) + '/image?uuid=' + data
-    return src_url
+    data = api.slice_face(img_path,key_point = key_point)
+    return config.imgUrl(data)
 
-@app.route("/manage/upload",methods=['GET'])
+@app.route("/manage/add",methods=['POST'])
 def manageUpload():
-    return 
-@app.route("/manage",methods=['POST'])
+    user_name = request.form['name']
+    f = request.files['imgfile']
+    imgPath = os.path.join(app.config['UPLOAD_FOLDER'], uuid.uuid1().__str__()[0:9] + secure_filename(f.filename))
+    f.save(imgPath)
+    face_id = manage_api.get_faces_maxid() + 1
+    message = api.register_face(imgPath,face_id,user_name)
+    if(message[0] == "success"):
+        manage_api.insert_face(manage_api.factoryFace(
+        face_id = face_id,
+        user_name = user_name,
+        img_name = message[1]
+        ))
+    return str(message[0])
+    
+@app.route("/manage/update",methods=['POST'])
+def manageUpdate():
+    user_name = request.form['name']
+    face_id = request.form['faceId']
+    f = request.files['imgfile']
+    imgPath = os.path.join(app.config['UPLOAD_FOLDER'], uuid.uuid1().__str__()[0:9] + secure_filename(f.filename))
+    f.save(imgPath)
+    api.delete_face(face_id)
+    message = api.register_face(imgPath,face_id,user_name)
+    if(message[0] == "success"):
+        manage_api.update_face(manage_api.factoryFace(
+        face_id = face_id,
+        user_name = user_name,
+        img_name = message[1]
+        ))
+    return str(message[0])
 
-def manage():
-    return 
-@app.route("/manage",methods=['POST'])
+@app.route("/manage/get",methods=['GET'])
+def manageGet():
+    face_infos = manage_api.get_faces_by_page(request.args.get('page'),request.args.get('pageSize'))
+    for face_info in face_infos:
+        face_info['imgSrc'] = config.faceUrl(face_info['imgSrc'])
+    return json.dumps(face_infos)
 
-def manage():
-    return 
-@app.route("/manage",methods=['POST'])
+@app.route("/manage/total",methods=['GET'])
+def manageTotal():
+    return str(manage_api.get_faces_num())
 
-def manage():
-    return 
-@app.route("/manage",methods=['POST'])
+@app.route("/manage/delete",methods=['GET'])
+def manageDelete():
+    try:
+        face_id = request.args.get('faceId')
+        api.delete_face(face_id)
+        manage_api.delete_face(face_id)        
+    except:
+        return {"msg":"error"}
+    return {"msg":"success"}
 
-def manage():
-    return 
+# def manage():
+#     return 
 if __name__ == '__main__':
     app.config['UPLOAD_FOLDER'] = config.upload()
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-
+    # api.move_files(config.FacesPath(),config.upload())
     app.run(config.server()['host'],
             config.server()['port'],
             config.server()['debug'],

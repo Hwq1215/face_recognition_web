@@ -22,6 +22,10 @@ def select(sql):
     _cursor.execute(sql)
     return _cursor.fetchall()
 
+def select_param(sql,val):
+    _cursor.execute(sql,val)
+    return _cursor.fetchall()
+
 def test():
     print(_cursor.execute('select * from face_info'))
     

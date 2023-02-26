@@ -2,6 +2,8 @@ import cv2
 from FAS import FAS_service
 import numpy as np
 import torch
+import pandas as pd
+import os
 from face_recognition import FaceRecognition
 
 class SafeFaceRecognition():
@@ -13,6 +15,7 @@ class SafeFaceRecognition():
         self.video_capture = cv2.VideoCapture(0)
         self.check_interval = check_interval
     def start(self):
+        f = open('D:/pythonTools/face_recognize/face_db.csv', 'w')
         frame_count = 0
         while True:
             ret, frame = self.video_capture.read()
@@ -30,6 +33,7 @@ class SafeFaceRecognition():
             # fas_color = [(0,0,225),(0,0,255)]
             if fas_score is not None:
                 for score in fas_score:
+                    f.write(str(score.item())+"\n")
                     fas_color.append((0, 0, 255) if score>0.651313990354538 else (0, 255, 0))
 
                 # UI显示
@@ -44,6 +48,7 @@ class SafeFaceRecognition():
             cv2.imshow('Video', frame)
             # Hit 'q' on the keyboard to quit!
             if cv2.waitKey(1) & 0xFF == ord('q'):
+                f.close()
                 break
             
         self.video_capture.release()

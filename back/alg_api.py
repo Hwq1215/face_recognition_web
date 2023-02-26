@@ -6,6 +6,7 @@ import os
 import math
 import cv2
 import torch
+import shutil
 from FAS import FAS_service
 from face_recognition import FaceRecognition
 
@@ -50,8 +51,7 @@ def opencv_recongition_alg(frame,tolerance=1.24,FAS=False,frame_size=160000):
     else:
         for face in recognized_faces:
             fas_color.append(RED)
-                    
-
+            
     # Display the results
     for face,color in zip(recognized_faces,fas_color):
         (left,top,right,bottom ) = face['bbox']
@@ -124,7 +124,7 @@ def compare_two_faces(imgPath1,imgPath2):
             "score": distances
         }
 
-def slice_face(imgPath):
+def slice_face(imgPath,key_point=True):
     img = cv2.imread(imgPath)
     detected_faces = face_recognition.detect(img)
     if(len(detected_faces) == 0):
@@ -136,6 +136,9 @@ def slice_face(imgPath):
         for detected_face in detected_faces:
             landmarks = detected_face['landmark_3d_68']
                 #求出两个中点
+            if key_point:
+                for i in range(len(landmarks)):
+                    cv2.circle(img, (landmarks[i][0], landmarks[i][1]), 1, (0, 0, 255), 2)
             left_center_point = ((landmarks[0][0] + landmarks[19][0])/2-2,(landmarks[0][1] + landmarks[19][1])/2-2)
             right_center_point = ((landmarks[16][0] + landmarks[24][0])/2-2,(landmarks[16][1] + landmarks[24][1])/2-2)
             for i in range(0,16):
@@ -165,9 +168,24 @@ def slice_face(imgPath):
         # cv2.imshow('mask',mask)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
+
         file_uuid = str(uuid.uuid1())
         file_name = file_uuid + ".jpg"         
         cv2.imwrite(os.path.join(config.upload(),file_name),mask)
         return file_uuid
-            
-                
+
+#注册人脸
+def register_face(imgPath,face_id,name):
+    img = cv2.imread(imgPath)
+    return face_recognition.register(img,face_id,name)
+        
+#删除人脸
+def delete_face(face_id):
+    return face_recognition.delete(face_id)
+
+def move_files(source_path, target_path):
+    for root, dirs, files in os.walk(source_path):
+            for file in files:
+                src_file = os.path.join(root, file)
+                shutil.copy(src_file, target_path)
+                print("success " + src_file)
