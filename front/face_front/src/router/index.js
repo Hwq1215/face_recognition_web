@@ -6,6 +6,7 @@ import videoShow from '../views/videoShow.vue'
 import compareFace from '../views/compareFace.vue' 
 import landmarks from '../views/landmarks.vue'
 import manage from '../views/manage.vue'
+import dashboard from '../views/mydashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,8 +18,8 @@ const router = createRouter({
       children:[
         {
           path: '',
-          name: bootstrap,
-          component: bootstrap
+          name: dashboard,
+          component: dashboard
         },
         {
           path: 'findface',
@@ -45,6 +46,11 @@ const router = createRouter({
           name: 'manage',
           component: manage
         },
+        {
+          path: 'bootstrap',
+          name: 'bootstrap',
+          component: bootstrap
+        }
       ]
     },
   ]

@@ -32,11 +32,11 @@ def face_save():
 @app.route("/image",methods=['GET'])
 @siwa.doc()
 def sendimage():
-    img_name = request.args.get('uuid') + '.jpg'
+    img_name = request.args.get('uuid') + '.png'
     img_local = os.path.join(app.config['UPLOAD_FOLDER'],img_name)
     img_file = open(img_local,"rb")
     res = make_response(img_file.read())
-    res.headers['Content-Type'] = 'image/jpg'
+    res.headers['Content-Type'] = 'image/png'
     img_file.close()
     return res
 
@@ -44,21 +44,23 @@ def sendimage():
 @siwa.doc()
 def sendfaceimage():
     img_name = request.args.get('name')
-    img_local = os.path.join(config.FacesPath(),img_name)
-    img_file = open(img_local,"rb")
-    res = make_response(img_file.read())
-    res.headers['Content-Type'] = 'image/jpg'
-    img_file.close()
+    bytes = api.get_face(img_name)
+    res = Response(bytes, mimetype='image/png') 
     return res
 
 @app.route("/findface",methods=['POST'])
 @siwa.doc()
 def find_face():
+    FAS = request.args.get('isopenfas') == "true"
+    LANDMARKS = request.args.get('isopenlandmarks') == "true"
     f = request.files['imgfile']
     path = os.path.join(app.config['UPLOAD_FOLDER'], uuid.uuid1().__str__()[0:9] + secure_filename(f.filename))
     f.save(path)
-    produce_file_uuid = api.find_faces_in_image(path)
-    return config.imgUrl(produce_file_uuid)
+    result = api.find_faces_in_image(path,FAS= FAS,LANDMARKS = LANDMARKS)
+    return {
+        "imgUrl":config.imgUrl(result['uuid_str']),
+        "names":result['names']
+    }
 
 @app.route('/webvideo')
 @siwa.doc()

@@ -33,7 +33,6 @@ def has_face(faceId):
     return dbconnect.insert(sql,val)!=0
 
 def delete_face(faceId):
-    print(str(faceId))
     sql = "delete from face_info where face_id = %s"
     val = (str(faceId),)
     dbconnect.insert(sql,val)

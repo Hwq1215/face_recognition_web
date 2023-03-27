@@ -1,0 +1,1054 @@
+<script setup>
+import { RouterLink, RouterView } from 'vue-router'
+</script>
+<template>
+  <div class="sert">
+      <router-view></router-view>
+  </div>
+</template>
+<style>
+  .sert{
+    background-color: #f5f5f5;
+    display: block;
+  }
+</style>
+<template>
+</template>
+<template>
+<el-menu 
+    :default-active="activeIndex"
+    mode="horizontal"
+    :router="true"
+    class="main-menu"
+    >
+    <el-menu-item index="/">首页</el-menu-item>
+    <el-sub-menu>
+      <template #title >图像处理</template>
+      <el-menu-item index="/findface">人脸识别</el-menu-item>
+      <el-menu-item index="/compare" >人脸对比</el-menu-item>
+      <el-menu-item index="/landmarks" >人脸精细分割</el-menu-item>
+    </el-sub-menu>
+    <el-menu-item index="/videoshow">视频流接入</el-menu-item>
+    <el-menu-item index="/manage">人脸信息管理</el-menu-item>
+    <!-- <el-menu-item index="4">关于我们</el-menu-item> -->
+  </el-menu>
+</template>
+<script>
+    import { ref } from 'vue'
+    export default{
+        name: 'Header',
+        data(){
+            return{
+                activeIndex: '/',
+            }
+        },
+        created(){
+          console.log(this.$route.path)
+          this.activeIndex = this.$route.path
+        },
+        methods: {
+        },
+    }
+</script>
+<style>
+  .main-menu{
+    font-weight: 600;
+  };
+</style>
+<template>
+    <div class="video-box">
+        <video ref="video-play" class="video-play"></video>
+        <div v-if="imgExist" class="side-box">
+            <el-button class="" type="primary" @click="getImg()">录制</el-button>
+            <div class="img-box">
+                <img  v-if="imgUrl" :src="imgUrl" ref="cut-img"  />
+                <el-icon v-else class="img-icon"><Picture /></el-icon>
+            </div>
+            <div class="btn-place">
+                <el-button class="" type="success" @click="$emit('choose-img',1)">选定</el-button>
+                <slot name="second-btn"></slot>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+export default{
+    name:'video-reader',
+    props:{
+        imgExist:{
+            type:Boolean,
+            default: true, 
+        }
+    },
+    data(){
+        return{
+            constraints:{
+                audio:false,
+                video:true
+            },
+            imgUrl: "",
+            imgFile: "",
+        }
+    },
+    created(){
+        this.getVedioStream();
+    },
+    methods:{
+        getVedioStream(){
+            navigator.mediaDevices.getUserMedia(this.constraints)
+            .then(stream=>{
+                var videoObj = this.$refs['video-play'];
+                videoObj.srcObject = stream;
+                videoObj.play();
+            })
+            .catch(err=>{
+                console.log(err);
+            })
+        },
+        getImg(){
+            var videoObj = this.$refs['video-play'];
+            var img = this.$refs['cut-img'];
+            var canvas = document.createElement("canvas");
+            canvas.width = videoObj.videoWidth;
+            canvas.height = videoObj.videoHeight;
+            console.log()
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(videoObj, 0, 0, videoObj.videoWidth, videoObj.videoHeight);
+            const base64 = canvas.toDataURL('image/png');
+            this.imgUrl = base64;
+            this.imgFile = this.convertBase64UrlToImgFile(base64, 'cut.png', 'image/png');
+            console.log(this.imgFile);
+        },
+        convertBase64UrlToImgFile(urlData, fileName, fileType) {
+            urlData = urlData.replace(/^data:image\/\w+;base64,/, "");
+            var bytes = window.atob(urlData); 
+            var ab = new ArrayBuffer(bytes.length);
+            var ia = new Int8Array(ab);
+            var i;
+            for (i = 0; i < bytes.length; i++) {
+                ia[i] = bytes.charCodeAt(i);
+            }
+            var blob = new Blob([ab], { type: fileType });
+            blob.lastModifiedDate = new Date();
+            blob.name = fileName;
+            return blob;
+    },
+    }
+}
+</script>
+<style>
+    .video-box{
+        display: flex;
+        height: 400px;
+    }
+    .video-box .video-play{
+        width: 60%;
+        height: 100%;
+    }
+    .video-box .side-box{
+        width: 40%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .video-box .side-box .img-box{
+        margin-top: 5%;
+        width: 90%;
+        height: 72%;
+        display: flex;
+        border: 1px dotted #ccc;
+        justify-content: center;
+        align-items: center;
+    }
+    .video-box .side-box .img-box img{
+        max-width: 100%;
+        max-height: 100%;
+    }
+    .btn-place{
+        margin-top: 5%;
+        width: 90%;
+        height: 10%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+<template>
+    <div>
+        <el-carousel   height="500px" type="card">
+            <el-carousel-item v-for="item in imgs"  >
+                <img :src="item.src"/>
+            </el-carousel-item>
+        </el-carousel>
+    </div>
+    <el-card>
+        <el-row :gutter="16">
+    <el-col :span="8">
+      <div class="statistic-card">
+        <el-statistic :value="98500">
+          <template #title>
+            <div style="display: inline-flex; align-items: center">
+              Daily active users
+              <el-tooltip
+                effect="dark"
+                content="Number of users who logged into the product in one day"
+                placement="top"
+              >
+                <el-icon style="margin-left: 4px" :size="12">
+                  <Warning />
+                </el-icon>
+              </el-tooltip>
+            </div>
+          </template>
+        </el-statistic>
+        <div class="statistic-footer">
+          <div class="footer-item">
+            <span>than yesterday</span>
+            <span class="green">
+              24%
+              <el-icon>
+                <CaretTop />
+              </el-icon>
+            </span>
+          </div>
+        </div>
+      </div>
+    </el-col>
+    <el-col :span="8">
+      <div class="statistic-card">
+        <el-statistic :value="693700">
+          <template #title>
+            <div style="display: inline-flex; align-items: center">
+              Monthly Active Users
+              <el-tooltip
+                effect="dark"
+                content="Number of users who logged into the product in one month"
+                placement="top"
+              >
+                <el-icon style="margin-left: 4px" :size="12">
+                  <Warning />
+                </el-icon>
+              </el-tooltip>
+            </div>
+          </template>
+        </el-statistic>
+        <div class="statistic-footer">
+          <div class="footer-item">
+            <span>month on month</span>
+            <span class="red">
+              12%
+              <el-icon>
+                <CaretBottom />
+              </el-icon>
+            </span>
+          </div>
+        </div>
+      </div>
+    </el-col>
+    <el-col :span="8">
+      <div class="statistic-card">
+        <el-statistic :value="72000" title="New transactions today">
+          <template #title>
+            <div style="display: inline-flex; align-items: center">
+              New transactions today
+            </div>
+          </template>
+        </el-statistic>
+        <div class="statistic-footer">
+          <div class="footer-item">
+            <span>than yesterday</span>
+            <span class="green">
+              16%
+              <el-icon>
+                <CaretTop />
+              </el-icon>
+            </span>
+          </div>
+          <div class="footer-item">
+            <el-icon :size="14">
+              <ArrowRight />
+            </el-icon>
+          </div>
+        </div>
+      </div>
+    </el-col>
+  </el-row>
+    </el-card>
+</template>
+<script>
+    import {ArrowRight,CaretBottom,CaretTop,Warning,} from '@element-plus/icons-vue'
+export default{
+    name: 'bootstrap',
+    data(){
+        return{
+            imgs:[
+                {
+                    src: new URL('../assets/style.png',import.meta.url).href,
+                    alt: 'Biden'
+                },
+                {
+                    src: new URL('../assets/style.png',import.meta.url).href,
+                    alt: 'Trump'
+                },
+                {
+                    src: new URL('../assets/style.png',import.meta.url).href,
+                    alt: 'Obama'
+                },
+            ]
+        }
+    }
+}
+</script>
+<style>
+ .el-carousel__item{
+    text-align: center;
+ }
+ .el-carousel__item img {
+  color: #475669;
+  opacity: 1;
+  margin: 0;
+  text-align: center;
+}
+:global(h2#card-usage ~ .example .example-showcase) {
+  background-color: var(--el-fill-color) !important;
+}
+.el-statistic {
+  --el-statistic-content-font-size: 28px;
+}
+.statistic-card {
+  height: 100%;
+  padding: 20px;
+  border-radius: 4px;
+  background-color: var(--el-bg-color-overlay);
+}
+.statistic-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--el-text-color-regular);
+  margin-top: 16px;
+}
+.statistic-footer .footer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.statistic-footer .footer-item span:last-child {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+}
+.green {
+  color: var(--el-color-success);
+}
+.red {
+  color: var(--el-color-error);
+}
+</style>
+<template>
+    <div class="compare-box">
+        <div class="left-img-container">
+            <h3>第一张图片</h3>
+            <el-upload class="img-button"
+            ref="upload"
+            :action="actionUrl"
+            drag
+            v-model:file-list="fileList1"
+            list-type="picture-card"
+            :show-file-list="false"
+            :limit="1"
+            :auto-upload="false"
+            >      
+            <div v-if="img1Url" >          
+                <img  class="imgshow" :src="img1Url">
+            </div>
+                <el-icon v-else class="avatar-uploader-icon "><IconPicture /></el-icon>
+            </el-upload>
+            <div class="record-button">
+                <el-button @click="openVideo(1)"><el-icon><VideoCamera /></el-icon></el-button>
+            </div>
+        </div>
+        <div class="mid-img-container">
+            <div>
+            </div>
+            <div>
+                <el-button type="primary" size="large" @click="compare">比对</el-button>
+            </div>
+            <div>
+                <el-button type="danger" size="large" @click="clear">清空</el-button>
+            </div>
+        </div>
+         <div class="right-img-container">
+            <h3>第二张图片</h3>
+            <el-upload class="img-button"
+            ref="upload"
+            :action="actionUrl"
+            drag
+            v-model:file-list="fileList2"
+            :show-file-list="false"
+            :limit="1"
+            :auto-upload="false"
+            >
+            <img v-if="img2Url" class="imgshow" :src="img2Url">
+                <el-icon v-else class="avatar-uploader-icon "><IconPicture /></el-icon>
+            </el-upload>
+            <div class="record-button">
+                <el-button @click="openVideo(2)"><el-icon><VideoCamera /></el-icon></el-button>
+            </div>
+        </div>
+    </div>
+    <el-dialog v-model="DialogIsVisiable" v-loading="loadingVisible" width="300px" title="比对结果" center>
+            <div>
+                <div >
+                    <div >
+                    <h3>是否为一个人
+                        <el-icon v-if="loadingVisible"> <Loading /></el-icon>
+                        <el-icon v-else-if="result.is_same"  color="#5bc194"><SuccessFilled/></el-icon>
+                        <el-icon v-else color="#fc5531"><CircleCloseFilled/></el-icon>
+                    </h3>
+                    </div>
+                    <div>
+                    <h3>成绩:
+                        <el-icon v-if="loadingVisible"> <Loading /></el-icon>
+                        <el v-else>{{result.score}}</el>
+                    </h3>
+                    </div>
+                </div>
+            </div>
+    </el-dialog>
+    <el-dialog v-model="VideoDialogIsVisiable">
+        <video-reader @choose-img="saveImg()" ref="video-reader"></video-reader>
+    </el-dialog>
+</template>
+<script>
+import { Picture as IconPicture ,SuccessFilled,CircleCloseFilled,Loading} from '@element-plus/icons-vue'
+import { httpurl } from '@/config';
+import axios from 'axios';
+import VideoReader from '../components/VideoReader.vue';
+export default{
+    data(){
+        return{
+            fileList1:[],
+            fileList2:[],
+            result: {
+                is_same: false,
+                score: 0,
+            },
+            actionUrl: httpurl+"/compare",
+            img1Url: '',
+            img2Url: '',
+            DialogIsVisiable: false,
+            loadingVisible: true,
+            VideoDialogIsVisiable: false,
+            videoIndex: 1,
+        }
+    },
+    watch:{
+        fileList1(newVal){
+            if(newVal.length>0){
+                this.img1Url = URL.createObjectURL(newVal[0].raw);
+            }
+        },
+        fileList2(newVal){
+            if(newVal.length>0){
+                this.img2Url = URL.createObjectURL(newVal[0].raw);
+            }
+        }
+    },
+    components: {
+        IconPicture,
+        SuccessFilled,
+        CircleCloseFilled,
+        Loading,
+        VideoReader,
+    },
+    methods:{
+        compare(){
+            this,this.loadingVisible = true;
+            this.DialogIsVisiable = true;
+            let fd = new FormData();
+            console.log(this.fileList1);
+            console.log(this.fileList2);
+            if (this.fileList1.length == 0 || this.fileList2.length == 0){
+                this.$message.error('请上传图片');
+                return;
+            }
+            fd.append('img1', this.fileList1[0].raw);
+            fd.append('img2', this.fileList2[0].raw);
+            axios({
+                method:'post',
+                url:this.actionUrl,
+                headers:{'Content-Type':'multipart/form-data',
+                        "Access-Control-Allow-Origin": "*"},
+                data:fd,
+            }).then((res)=>{
+                console.log(res);
+                this.result = res.data;
+                if(res.status!=200){
+                    this.$message.error('比对失败');
+                    this.DialogIsVisiable = false
+                    return;
+                }
+                console.log(this.result);
+                if(this.result.score == -1){
+                    this.$message.error('比对失败,没有找到人脸');
+                    this.DialogIsVisiable = false
+                    return;
+                }
+                this.loadingVisible = false;                
+            })
+        },
+        clear(){
+            this.fileList1 = [];
+            this.fileList2 = [];
+            this.img1Url = '';
+            this.img2Url = '';
+        },
+        openVideo(index){
+            console.log(index);
+            this.videoIndex = index;
+            this.VideoDialogIsVisiable = true;
+        },
+        saveImg(){
+            var img = this.$refs['video-reader'].imgFile;
+            if(this.videoIndex == 1){
+                this.fileList1 = [];
+                this.fileList1.push({raw:img});
+            }else{
+                this.fileList2 = [];
+                this.fileList2.push({raw:img});
+            }
+            this.VideoDialogIsVisiable = false;
+        }
+    }
+}
+</script>
+<style>
+.compare-box{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+}
+.left-img-container{
+    margin-left: 120px;
+    margin-top: 100px;
+    width: 400px;
+    height: 400px;
+    background-color: #ffffff;
+    float: left;
+    text-align: center;
+}
+.left-img-container .el-upload-dragger{
+    width: 400px;
+    height: 400px;
+    background-color: #f5f5f5;
+    border: #614555 2px;
+    border-radius: 5px;
+    border-style:dotted;
+    text-align: center;
+}
+.right-img-container{
+    margin-right: 120px;
+    margin-top: 100px;
+    width: 400px;
+    height: 400px;
+    background-color: #ffffff;
+    float: right;
+    text-align: center;
+}
+.right-img-container .el-upload-dragger{
+    width: 400px;
+    height: 400px;
+    background-color: #f5f5f5;
+    border: #614555 2px;
+    border-radius: 5px;
+    border-style:dotted;
+    text-align: center;
+}
+.mid-img-container{
+    margin-left: 132px;
+    margin-right: 132px;
+    margin-top: 200px;
+    width: 200px;
+    height: 200px;
+    background-color: #ffffff;
+    float: left;
+    border: #f5f5f5 1px;
+    border-radius: 5px;
+    text-align: center;
+}
+.mid-img-container > div{
+    width: 100%;
+    height: 100px;
+    background-color: #ffffff;
+    float: left;
+    text-align: center;
+}
+.img-button{
+    width: 400px;
+    height: 400px;
+    background-color: #f5f5f5;
+    border: #f5f5f5 1px;
+    border-radius: 5px;
+    display: flex;
+}
+.img-button .imgshow{
+    max-width: 350px;
+    max-height: 320px;
+}
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 300px;
+  height: 300px;
+  text-align: center;
+}
+.dialog-center{
+    text-align: center;
+}
+.record-button{
+    margin-top: 5%;
+    width: 100%;
+    height: 100%;
+}
+</style>
+<template>
+<div class="top-box">
+    <h4>
+        开启欺诈识别<el-switch v-model="isOpenFAS"></el-switch>
+    </h4>
+    <h4>
+        开启关键点标识<el-switch v-model="isOpenLandmarks"></el-switch>
+    </h4>
+        <!-- <el-button type="success" size="large" class="top-button" @click="slice">asd</el-button> -->
+    <el-button type="success"  class="top-button" @click="handleRecord()">录制 <el-icon><VideoCamera /></el-icon></el-button>
+</div>
+<div>
+    <el-upload
+      class="upload-demo"
+      :action="actionUrl"
+      drag="true"
+      ref="upload-ref"
+      auto-upload="true"
+      :http-request="httpRequest"
+      :on-preview="handlePreview"
+      v-model:file-list="fileList2"
+      list-type="picture">
+      <el class="drag-item">
+        <h3>拖拽图片到这</h3>
+        <h5>- 或 -</h5>
+        <h3>点此上传</h3></el>
+    <el-dialog v-model="dialogIsVisible"  :append-to-body="true" :close-on-click-modal="false">
+      <img w-full style="width:100%" :src="produce_imgs">
+    </el-dialog>
+    </el-upload>
+    <div class="side-box">
+    </div>
+</div>
+<el-dialog v-model="VideoDialogIsVisiable">
+    <video-reader @choose-img="uploadImg()" ref="video-reader">
+        <!-- <template #second-btn>
+            <el-button type="warning" @click="">查看</el-button>
+        </template> -->
+    </video-reader>
+</el-dialog>
+    </template>
+<script lang="ts">
+import axios from 'axios'
+import { Plus } from '@element-plus/icons-vue'
+import { httpurl } from '../config'
+import VideoReader from '../components/VideoReader.vue'
+export default {
+    data(){
+        return {
+        fileList2: [],
+        actionUrl: httpurl+"/findface",
+        produce_imgs: '',
+        dialogIsVisible: false,
+        isOpenFAS: true,
+        isOpenLandmarks: true,
+        VideoDialogIsVisiable: false,
+     }
+    },
+    components:{
+        VideoReader,
+        Plus,
+    },
+    methods: {
+        handleRemove(file, fileList) {
+        console.log(file);
+        console.log(this.fileList2);
+        },
+        handlePreview(file) {
+        console.log(file);
+        this.produce_imgs = file.response.data;
+        this.dialogIsVisible = true;
+        },
+        async httpRequest(options){
+        console.log(options)
+        let fd = new FormData();
+        fd.append('imgfile', options.file);
+        var ax = axios({
+            method:'post',
+            url:options.action+"?isopenfas="+this.isOpenFAS+"&isopenlandmarks="+this.isOpenLandmarks,
+            headers:{'Content-Type':'multipart/form-data',
+                    "Access-Control-Allow-Origin": "*"},
+            data:fd,
+        }) 
+        return ax;
+        },
+        handleRecord(){
+            this.VideoDialogIsVisiable = true;
+        },
+        async uploadImg(){
+            var imgUrl = this.$refs['video-reader'].imgUrl;
+            var img = this.$refs['video-reader'].imgFile;
+            console.log(img);
+            let fd = new FormData();
+            fd.append('imgfile',img);
+            var ax = axios({
+            method:'post',
+            url:this.actionUrl+"?isopenfas="+this.isOpenFAS+"&isopenlandmarks="+this.isOpenLandmarks,
+            headers:{'Content-Type':'multipart/form-data',
+                    "Access-Control-Allow-Origin": "*"},
+            data:fd,
+            })
+            this.fileList2.push({
+                name: "cut.png",
+                percentage: 0,
+                status: 'success',
+                size: img.size,
+                uid: 0,
+                url: imgUrl,
+                response: {
+                    data: await ax.then(res => res.data),
+                },
+                raw: new File([img],'cut_img', {type:'image/png', lastModified: Date.now()})
+            });
+            this.VideoDialogIsVisiable = false;
+        },
+    }
+    }
+</script>
+<style>
+    .drag-item{
+        font-size: medium;
+        background-color: #f5f7fa;
+    }
+    .top-box{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        background-color: #ffffff;
+        font-size: large;
+        align-items: center;
+    }
+    .top-box h4{
+        margin-left: 3%;
+    }
+    .top-box .top-button{
+        margin-left: 5%;
+    }
+    .father-box{
+        width: 100%;
+        height: 100%;
+        display: flex;
+    }
+    .record-button{
+        width: 100px;
+    }
+</style>
+<template>
+    <div>
+            <Header></Header>
+                <router-view />
+            <Footer></Footer>
+    </div>
+</template>
+<script>
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
+export default {
+    name: 'HomeView',    
+    data() {
+        return{
+        }
+    },
+    components: {
+        Header,
+        Footer,
+    }
+}
+</script>
+<template>
+    <div class="compare-box">
+        <div class="left-img-container">
+            <h3>源图片</h3>
+            <el-upload class="img-button"
+            ref="upload"
+            :action="actionUrl"
+            drag
+            v-model:file-list="fileList1"
+            list-type="picture-card"
+            :show-file-list="false"
+            :limit="1"
+            :auto-upload="false"
+            >      
+            <div v-if="img1Url" >          
+                <img  class="imgshow" :src="img1Url">
+            </div>
+                <el-icon v-else class="avatar-uploader-icon "><IconPicture /></el-icon>
+            </el-upload>
+            <div class="record-button">
+                <el-button @click="openVideo()"><el-icon><VideoCamera /></el-icon></el-button>
+            </div>
+        </div>
+        <div class="mid-img-container">
+            <div>
+                <h4>开启关键点检测<el-switch v-model="keyPoint"></el-switch></h4>
+            </div>
+            <div>
+                <el-button type="success" size="large" @click="slice">生成</el-button>
+            </div>
+            <div>
+                <el-button type="danger" size="large" @click="clear">清空</el-button>
+            </div>
+        </div>
+         <div class="right-img-container">
+            <h3>目标图片</h3>
+            <div class="img-button-product">
+                <img v-if="img2Url" class="imgshow" :src="img2Url">
+                <el-icon v-else class="avatar-uploader-icon "><IconPicture /></el-icon>
+            </div>
+        </div>
+    </div>
+    <el-dialog v-model="VideoDialogIsVisiable">
+        <video-reader @choose-img="saveImg()" ref="video-reader"></video-reader>
+    </el-dialog>
+    <!-- <el-dialog v-model="DialogIsVisiable" v-loading="loadingVisible" width="300px" title="比对结果" center>
+            <div>
+                <div >
+                    <div >
+                    <h3>是否为一个人
+                        <el-icon v-if="loadingVisible"> <Loading /></el-icon>
+                        <el-icon v-else-if="result.is_same"  color="#5bc194"><SuccessFilled/></el-icon>
+                        <el-icon v-else color="#fc5531"><CircleCloseFilled/></el-icon>
+                    </h3>
+                    </div>
+                    <div>
+                    <h3>成绩:
+                        <el-icon v-if="loadingVisible"> <Loading /></el-icon>
+                        <el v-else>{{result.score}}</el>
+                    </h3>
+                    </div>
+                </div>
+            </div>
+    </el-dialog> -->
+</template>
+<script>
+import { Picture as IconPicture ,SuccessFilled,CircleCloseFilled,Loading, Switch} from '@element-plus/icons-vue'
+import { httpurl } from '@/config';
+import axios from 'axios';
+import VideoReader from '../components/VideoReader.vue';
+export default{
+    data(){
+        return{
+            fileList1:[],
+            fileList2:[],
+            result: {
+                is_same: false,
+                score: 0,
+            },
+            actionUrl: httpurl+"/slice",
+            img1Url: '',
+            img2Url: '',
+            DialogIsVisiable: false,
+            loadingVisible: true,
+            keyPoint: true,
+            VideoDialogIsVisiable: false,
+        }
+    },
+    watch:{
+        fileList1(newVal){
+            if(newVal.length>0){
+                this.img1Url = URL.createObjectURL(newVal[0].raw);
+            }
+        },
+        fileList2(newVal){
+            if(newVal.length>0){
+                this.img2Url = URL.createObjectURL(newVal[0].raw);
+            }
+        }
+    },
+    components: {
+    IconPicture,
+    SuccessFilled,
+    CircleCloseFilled,
+    Loading,
+    Switch,
+    VideoReader,
+},
+    methods:{
+        slice(){
+            this,this.loadingVisible = true;
+            this.DialogIsVisiable = true;
+            let fd = new FormData();
+            console.log(this.fileList1);
+            if (this.fileList1.length == 0){
+                this.$message.error('请上传图片');
+                return;
+            }
+            fd.append('img', this.fileList1[0].raw);
+            fd.append('keypoint', this.keyPoint);
+            axios({
+                method:'post',
+                url:this.actionUrl,
+                headers:{'Content-Type':'multipart/form-data',
+                        "Access-Control-Allow-Origin": "*"},
+                data:fd,
+            }).then((res)=>{
+                this.img2Url = res.data;               
+            })
+        },
+        clear(){
+            this.fileList1 = [];
+            this.fileList2 = [];
+            this.img1Url = '';
+            this.img2Url = '';
+        },
+        openVideo(){
+            this.VideoDialogIsVisiable = true;
+        },
+        saveImg(){
+            var img = this.$refs['video-reader'].imgFile;
+            this.fileList1 = [];
+            this.fileList1.push({raw:img});
+            this.VideoDialogIsVisiable = false;
+        }
+    }
+}
+</script>
+<style>
+.compare-box{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+}
+.left-img-container{
+    margin-left: 120px;
+    margin-top: 100px;
+    width: 400px;
+    height: 400px;
+    background-color: #ffffff;
+    float: left;
+    text-align: center;
+}
+.left-img-container .el-upload-dragger{
+    width: 400px;
+    height: 400px;
+    background-color: #f5f5f5;
+    border: #614555 2px;
+    border-radius: 5px;
+    border-style:dotted;
+    text-align: center;
+}
+.right-img-container{
+    margin-right: 120px;
+    margin-top: 100px;
+    width: 400px;
+    height: 400px;
+    background-color: #ffffff;
+    float: right;
+    text-align: center;
+}
+.right-img-container .el-upload-dragger{
+    width: 400px;
+    height: 400px;
+    background-color: #f5f5f5;
+    border: #614555 2px;
+    border-radius: 5px;
+    border-style:dotted;
+    text-align: center;
+}
+.mid-img-container{
+    margin-left: 132px;
+    margin-right: 132px;
+    margin-top: 200px;
+    width: 200px;
+    height: 200px;
+    background-color: #ffffff;
+    float: left;
+    border: #f5f5f5 1px;
+    border-radius: 5px;
+    text-align: center;
+}
+.mid-img-container > div{
+    width: 100%;
+    height: 100px;
+    background-color: #ffffff;
+    float: left;
+    text-align: center;
+}
+.img-button{
+    width: 400px;
+    height: 400px;
+    background-color: #f5f5f5;
+    border: #f5f5f5 1px;
+    border-radius: 5px;
+    display: flex;
+}
+.img-button .imgshow{
+    max-width: 350px;
+    max-height: 320px;
+}
+.img-button-product{
+    width: 400px;
+    height: 400px;
+    background-color: #f5f5f5;
+    border: #000000 2px dotted;
+    border-radius: 5px;
+    display: flex;
+}
+.img-button-product .imgshow{
+    margin: auto;
+    max-width: 360px;
+    max-height: 320px
+}
+.img-button .el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 300px;
+  height: 300px;
+  text-align: center;
+}
+.img-button-product .el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 390px;
+  height: 390px;
+  text-align: center;
+}
+.dialog-center{
+    text-align: center;
+}
+</style>
+<script setup>
+import { RouterLink, RouterView } from 'vue-router'
+</script>
+<template>
+  <div class="sert">
+      <router-view></router-view>
+  </div>
+</template>
+<style>
+  .sert{
+    background-color: #f5f5f5;
+    display: block;
+  }
+</style>

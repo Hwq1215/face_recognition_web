@@ -19,6 +19,9 @@
             </div>
                 <el-icon v-else class="avatar-uploader-icon "><IconPicture /></el-icon>
             </el-upload>
+            <div class="record-button">
+                <el-button @click="openVideo()"><el-icon><VideoCamera /></el-icon></el-button>
+            </div>
         </div>
         
         <div class="mid-img-container">
@@ -43,6 +46,9 @@
         </div>
 
     </div>
+    <el-dialog v-model="VideoDialogIsVisiable">
+        <video-reader @choose-img="saveImg()" ref="video-reader"></video-reader>
+    </el-dialog>
     <!-- <el-dialog v-model="DialogIsVisiable" v-loading="loadingVisible" width="300px" title="比对结果" center>
             <div>
                 <div >
@@ -69,7 +75,7 @@
 import { Picture as IconPicture ,SuccessFilled,CircleCloseFilled,Loading, Switch} from '@element-plus/icons-vue'
 import { httpurl } from '@/config';
 import axios from 'axios';
-
+import VideoReader from '../components/VideoReader.vue';
 export default{
     data(){
         return{
@@ -85,6 +91,7 @@ export default{
             DialogIsVisiable: false,
             loadingVisible: true,
             keyPoint: true,
+            VideoDialogIsVisiable: false,
         }
     },
     watch:{
@@ -104,7 +111,8 @@ export default{
     SuccessFilled,
     CircleCloseFilled,
     Loading,
-    Switch
+    Switch,
+    VideoReader,
 },
     methods:{
         slice(){
@@ -134,8 +142,17 @@ export default{
             this.img1Url = '';
             this.img2Url = '';
         },
+        openVideo(){
+            this.VideoDialogIsVisiable = true;
+        },
+        saveImg(){
+            var img = this.$refs['video-reader'].imgFile;
+            this.fileList1 = [];
+            this.fileList1.push({raw:img});
+            this.VideoDialogIsVisiable = false;
         }
     }
+}
 </script>
 <style>
 .compare-box{

@@ -95,11 +95,10 @@
                     <el-icon size="20" v-else><Picture/></el-icon>
                 </div>
                 <div style="margin-top: 0px; margin-left: 20px;" >
-                    <input @change="showImg($event)"  ref="inputImg" class="input-hiden" hidden type="file"/><br>
-                    <el-button type="success" @click="">录制<el-icon size="17"><VideoCameraFilled /></el-icon></el-button>
+                    <input @change="showImgEvent($event)"  ref="inputImg" class="input-hiden" hidden type="file"/><br>
+                    <el-button type="success" @click="handleVideo()">录制<el-icon size="17"><VideoCameraFilled /></el-icon></el-button>
                 </div>
-                
-                </el-form-item>
+                                </el-form-item>
             <el-form-item >
                     <el-button v-if="editChoose" type="primary" @click="updateFaceData()">确认</el-button>
                     <el-button v-else type="primary" @click="addFaceData()">确认</el-button>
@@ -108,19 +107,25 @@
         </el-form>
     </el-dialog>
 
+    <el-dialog v-model="VideoDialogIsVisiable">
+    <video-reader @choose-img="getVideoImg()" ref="reader"></video-reader>
+    </el-dialog>
 </template>
 
 <script>
 import {getFacesData,getFacesTotal,deleteFaceData} from "@/api/getData";
 import { Plus,Picture as IconPicture, Picture, Upload, Refresh} from '@element-plus/icons-vue'
+import VideoReader from "@/components/VideoReader.vue"
 import {httpurl} from "@/config"
 import axios from "axios";
+
     export default{
     data() {
         return {
             total: 100,
             currentPage: 1,
             DialogIsVisiable: false,
+            VideoDialogIsVisiable: false,
             editChoose: true,
             imageUrl: "",
             pageSize: 7,
@@ -163,7 +168,8 @@ import axios from "axios";
     components:{
     Plus,
     IconPicture,
-    Refresh
+    Refresh,
+    VideoReader
 },
     watch: {
         currentPage(val) {
@@ -197,6 +203,9 @@ import axios from "axios";
             this.editChoose = false
             this.DialogIsVisiable = true;
         },
+        handleVideo(){
+            this.VideoDialogIsVisiable = true;
+        },
         addFaceData(){
             this.UploadFaceData();
             setTimeout(()=>{
@@ -206,6 +215,7 @@ import axios from "axios";
         handleInsert(){
             this.addFaceData();
         },
+
         async getFacesTotal() {
             this.total = await getFacesTotal();
         },
@@ -255,15 +265,25 @@ import axios from "axios";
                 files: undefined
             };
         },
-        showImg(e) {
-            let that = this;//改变this指向
-            let files = e.target.files[0];//图片文件名
-            if (!e || !window.FileReader) return; // 看是否支持FileReader
+        getVideoImg(){
+            var file = this.$refs['reader'].imgFile;
+            this.showImg(file); 
+            this.VideoDialogIsVisiable = false;
+            console.log(file);
+        },
+        showImgEvent(e) {
+            let file = e.target.files[0];//图片文件名
+            this.showImg(file);
+        },
+        showImg(file){
+            let that = this;
+            if (!file || !window.FileReader) return; // 看是否支持FileReader
             let reader = new FileReader();
-            reader.readAsDataURL(files); // 关键一步，在这里转换的
+            console.log(file);
+            reader.readAsDataURL(file); // 关键一步，在这里转换的
             reader.onloadend = function () {
                 that.chooseItem.imgSrc = this.result;//赋值
-                that.chooseItem.files = files;
+                that.chooseItem.files = file;
             }
         },
         UploadFaceData(){

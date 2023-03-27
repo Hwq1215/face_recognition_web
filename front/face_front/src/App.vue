@@ -14,4 +14,5 @@ import { RouterLink, RouterView } from 'vue-router'
     background-color: #f5f5f5;
     display: block;
   }
+
 </style>

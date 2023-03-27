@@ -132,7 +132,7 @@ class FaceRecognition:
         path = os.path.join(self.face_db,file_name)
         cv2.imencode('.png', image)[1].tofile(path)
         self.faces_embedding.append({
-            "face_id": face_id,
+            "face_id": str(face_id),
             "user_name": user_name,
             "feature": embedding
         })
@@ -141,7 +141,7 @@ class FaceRecognition:
     # 删除人脸
     def delete(self,face_id):
         for embedding in self.faces_embedding:
-            if embedding['face_id'] == face_id:
+            if embedding['face_id'] == str(face_id):
                 self.faces_embedding.remove(embedding)
         for root, dirs, files in os.walk(self.face_db):
             for file in files:

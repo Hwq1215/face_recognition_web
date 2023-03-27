@@ -29,7 +29,7 @@ def recongition(imgPath):
         return results[0]
               
 
-def opencv_recongition_alg(frame,tolerance=1.24,FAS=False,frame_size=160000):
+def opencv_recongition_alg(frame,tolerance=1.24,FAS=False,LANDMARKS=False,frame_size=160000):
     _shape = frame.shape
     area = _shape[0] * _shape[1]
     resmall = frame_size/area
@@ -64,25 +64,31 @@ def opencv_recongition_alg(frame,tolerance=1.24,FAS=False,frame_size=160000):
         color = color
         # Draw a box around the face
         cv2.rectangle(frame, (left, top), (right, bottom), color, 1+math.floor(_shape[0]*0.001))
-
+        if(LANDMARKS):
+            landmark = face['landmark']
+            for i in range(len(landmark)):
+                cv2.circle(frame, (math.floor(landmark[i][0]*relarge), math.floor(landmark[i][1]*relarge)), 1, (0, 0, 255), 2)
         # Draw a label with a name below the face
         cv2.rectangle(frame, (left, bottom), (right, math.floor(bottom+_shape[0]*0.03)), color, cv2.FILLED)
         font = cv2.FONT_HERSHEY_DUPLEX
         cv2.putText(frame,face['name'], (left,math.floor(bottom +_shape[0]*0.03)), font, _shape[0]*0.002, (255, 255, 255), 1+math.floor(_shape[0]*0.0015))
         if FAS:
-            cv2.putText(frame, str(score), (left+1,math.floor(top+_shape[0]*0.02)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            cv2.putText(frame, str(score.item()), (left+1,math.floor(top+_shape[0]*0.02)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
     return frame
 
 
-def find_faces_in_image(imgPath):
+def find_faces_in_image(imgPath,FAS = False,LANDMARKS = False):
     frame = cv2.imread(imgPath)
-    opencv_recongition_alg(frame,frame_size=1000000)
-    # # return base64_str of image
+    names = face_recognition.recognition(frame)
+    opencv_recongition_alg(frame,tolerance=1.24,FAS=FAS,LANDMARKS=LANDMARKS,frame_size=400000)
     uuid_str = uuid.uuid1().__str__()
-    filename =  uuid_str + ".jpg"
+    filename = uuid_str + ".png"
     filepath = os.path.join(config.upload(),filename)
     cv2.imwrite(filepath,frame)
-    return uuid_str
+    return{
+        "uuid_str":uuid_str,
+        "names":names
+    }
 
 
 def web_video_is_effective(url):
@@ -104,10 +110,10 @@ def find_faces_in_web_video(url,FAS = False):
             break
         else:
             inframe = opencv_recongition_alg(frame,tolerance=0.55,FAS=FAS)
-            ret, buffer = cv2.imencode('.jpg', inframe)
+            ret, buffer = cv2.imencode('.png', inframe)
             outframe = buffer.tobytes()
         yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + outframe + b'\r\n')  # concat frame one by one and show result
+                   b'Content-Type: image/png\r\n\r\n' + outframe + b'\r\n')  # concat frame one by one and show result
 
 
 def compare_two_faces(imgPath1,imgPath2):
@@ -170,7 +176,7 @@ def slice_face(imgPath,key_point=True):
         # cv2.destroyAllWindows()
 
         file_uuid = str(uuid.uuid1())
-        file_name = file_uuid + ".jpg"         
+        file_name = file_uuid + ".png"         
         cv2.imwrite(os.path.join(config.upload(),file_name),mask)
         return file_uuid
 
@@ -189,3 +195,16 @@ def move_files(source_path, target_path):
                 src_file = os.path.join(root, file)
                 shutil.copy(src_file, target_path)
                 print("success " + src_file)
+
+#查看人脸
+def get_face(face_name:str)->bytes:
+    img_local = os.path.join(config.FacesPath(),face_name)
+    if os.path.exists(img_local):
+        img = cv2.imread(img_local)
+        mask = cv2.imread(config.staticPath() + '/imgs/safe.png')
+        mask= cv2.resize(mask,(img.shape[1],img.shape[0]))
+        alpha = 0.25
+        result = cv2.addWeighted(img,1-alpha,mask,alpha,0)
+        ref,buffer = cv2.imencode('.png',result)
+        return buffer.tobytes()
+    return None

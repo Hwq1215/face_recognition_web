@@ -1,7 +1,7 @@
 import { httpurl } from "@/config";
 const baseUrl = httpurl;
 
-export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
+export default async(url = '', data = {}, type = 'GET', method = 'no-fetch') => {
 	var chooseUrl;
     chooseUrl = baseUrl;
 	type = type.toUpperCase();

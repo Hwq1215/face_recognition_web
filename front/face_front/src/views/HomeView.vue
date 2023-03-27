@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="body">
             <Header></Header>
                 <router-view />
             <Footer></Footer>
@@ -21,3 +21,10 @@ export default {
     }
 }
 </script>
+
+<style>
+.body{
+    width: 100%;
+    height: 100%;
+}
+</style>

@@ -2,7 +2,7 @@ import fetch from "./fetch"
 
 export const getFacesData = data => fetch('/manage/get',data ,'GET');
 
-export const getFacesTotal = () => fetch('/manage/total');
+export const getFacesTotal = () => fetch('/manage/total','', 'GET');
 
 // export const addFaceData = data => fetch('/manage/addFaceData', data, 'POST');
 

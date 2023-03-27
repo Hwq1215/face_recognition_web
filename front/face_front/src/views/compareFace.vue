@@ -19,6 +19,9 @@
             </div>
                 <el-icon v-else class="avatar-uploader-icon "><IconPicture /></el-icon>
             </el-upload>
+            <div class="record-button">
+                <el-button @click="openVideo(1)"><el-icon><VideoCamera /></el-icon></el-button>
+            </div>
         </div>
         
         <div class="mid-img-container">
@@ -46,6 +49,9 @@
             <img v-if="img2Url" class="imgshow" :src="img2Url">
                 <el-icon v-else class="avatar-uploader-icon "><IconPicture /></el-icon>
             </el-upload>
+            <div class="record-button">
+                <el-button @click="openVideo(2)"><el-icon><VideoCamera /></el-icon></el-button>
+            </div>
         </div>
 
     </div>
@@ -69,12 +75,17 @@
                 
             </div>
     </el-dialog>
+
+    <el-dialog v-model="VideoDialogIsVisiable">
+        <video-reader @choose-img="saveImg()" ref="video-reader"></video-reader>
+    </el-dialog>
 </template>
 
 <script>
 import { Picture as IconPicture ,SuccessFilled,CircleCloseFilled,Loading} from '@element-plus/icons-vue'
 import { httpurl } from '@/config';
 import axios from 'axios';
+import VideoReader from '../components/VideoReader.vue';
 
 export default{
     data(){
@@ -90,6 +101,8 @@ export default{
             img2Url: '',
             DialogIsVisiable: false,
             loadingVisible: true,
+            VideoDialogIsVisiable: false,
+            videoIndex: 1,
         }
     },
     watch:{
@@ -108,7 +121,8 @@ export default{
         IconPicture,
         SuccessFilled,
         CircleCloseFilled,
-        Loading
+        Loading,
+        VideoReader,
     },
     methods:{
         compare(){
@@ -153,8 +167,24 @@ export default{
             this.img1Url = '';
             this.img2Url = '';
         },
+        openVideo(index){
+            console.log(index);
+            this.videoIndex = index;
+            this.VideoDialogIsVisiable = true;
+        },
+        saveImg(){
+            var img = this.$refs['video-reader'].imgFile;
+            if(this.videoIndex == 1){
+                this.fileList1 = [];
+                this.fileList1.push({raw:img});
+            }else{
+                this.fileList2 = [];
+                this.fileList2.push({raw:img});
+            }
+            this.VideoDialogIsVisiable = false;
         }
     }
+}
 </script>
 <style>
 .compare-box{
@@ -246,6 +276,11 @@ export default{
 }
 .dialog-center{
     text-align: center;
+}
+.record-button{
+    margin-top: 5%;
+    width: 100%;
+    height: 100%;
 }
 </style>
 

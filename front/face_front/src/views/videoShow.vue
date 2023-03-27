@@ -69,7 +69,7 @@ export default{
         align-items: center;
     }
     .index-img{
-        max-width: 1400px;
-        max-width: 530px;
+        max-width: 1500px;
+        max-height: 680px;
     }
 </style>

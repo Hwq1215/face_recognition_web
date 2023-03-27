@@ -1,5 +1,6 @@
 import yaml as yaml
 import os
+import uuid
 ConfigPath = "./application.yaml"
 default_server = {
     "negotitate": "http",
@@ -21,6 +22,8 @@ default_dataset = {
 }
 
 default_FacesPath = "./faces"
+
+default_staticPath = "./static"
 
 data = []
 
@@ -59,18 +62,25 @@ def FacesPath():
         os.mkdir(default_FacesPath)
     return default_FacesPath
 
+def staticPath():
+    if data['staticPath'] is not None:
+        default_staticPath = data['staticPath']
+    if os.path.exists(default_staticPath) == False:
+        os.mkdir(default_staticPath)
+    return data['staticPath']
+
 def imgUrl(data):
     if type(server()['domain']) != str:
-        src_url = 'http://' + str(server()['ip']) + ':' + str(server()['port']) + '/image?uuid=' + data
+        src_url = 'http://' + str(server()['ip']) + ':' + str(server()['port']) + '/image?uuid=' + data + '&t=' + str(uuid.uuid1())[0:6]
     else:
-        src_url = 'http://' + str(server()['domain']) + '/image?uuid=' + data
+        src_url = 'http://' + str(server()['domain']) + '/image?uuid=' + data + '&t=' + str(uuid.uuid1())[0:6]
     return src_url
 
 def faceUrl(data):
     if type(server()['domain']) != str:
-        src_url = 'http://' + str(server()['ip']) + ':' + str(server()['port']) + '/face?name=' + data
+        src_url = 'http://' + str(server()['ip']) + ':' + str(server()['port']) + '/face?name=' + data + '&t=' + str(uuid.uuid1())[0:6]
     else:
-        src_url = 'http://' + str(server()['domain']) + '/face?uuid=' + data
+        src_url = 'http://' + str(server()['domain']) + '/face?name=' + data + '&t=' + str(uuid.uuid1())[0:6]
     return src_url
 
 if (__name__ == '__main__'):
