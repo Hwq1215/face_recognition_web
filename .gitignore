@@ -5,7 +5,7 @@
 /temp/
 /upload/
 /front/dist/
-/front/node_modules/
+**/node_modules/
 /front/vue2_front/
 /back/models
 /back/FAS/model/SSAN-F_p1_best.pth

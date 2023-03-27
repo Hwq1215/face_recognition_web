@@ -1,0 +1,1 @@
+{"version":3,"file":"config.2519a230.js","sources":["../../src/config.ts"],"sourcesContent":["// export const httpurl = \"http://region-3.seetacloud.com:22305/back/api/\"\r\n\r\n\r\nexport const httpurl = \"http://127.0.0.1:5006\"\r\n// export const httpurl = 'http://192.168.5.229:5006'"],"names":[],"mappings":"KAGa,GAAU"}
