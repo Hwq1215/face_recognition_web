@@ -8,6 +8,6 @@
 **/node_modules/
 /front/vue2_front/
 /back/models
-/back/FAS/results/model/
+/back/FAS/results/
 /*.html
 **/.VSCodeCounter
