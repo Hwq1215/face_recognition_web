@@ -8,9 +8,6 @@
 **/node_modules/
 /front/vue2_front/
 /back/models
-/back/FAS/model/SSAN-F_p1_best.pth
-/back/FAS/model/SSAN-F_p3_best.pth
-/back/FAS/model/SSAN-R_p2_best.pth
-/back/FAS/model/SSAN-R_p1_best.pth
-/back/FAS/model/SSAN-R_p20_best.pth
+/back/FAS/results/model/
 /*.html
+**/.VSCodeCounter

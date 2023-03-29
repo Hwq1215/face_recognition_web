@@ -11,7 +11,7 @@ from FAS import FAS_service
 from face_recognition import FaceRecognition
 
 fas = FAS_service(model_path=config.FAS_model_path(), device= "cuda" if torch.cuda.is_available() else "cpu")
-face_recognition = FaceRecognition(gpu_id = 1 if torch.cuda.is_available() else -1, face_db=config.FacesPath(), det_size=(640,640))
+face_recognition = FaceRecognition(-1, face_db=config.FacesPath(), det_size=(640,640))
 
 GREEN = (0, 255, 0)
 RED = (0, 0, 255)
