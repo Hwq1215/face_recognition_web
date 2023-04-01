@@ -168,7 +168,7 @@
                 <div class="h-5 w-6 block">
                   <el-icon class="w-6 mx-auto text-dark-20"><Promotion /></el-icon>
                 </div>
-                <a href="http://localhost:5006/docs" target="blank" type="blank">
+                <a href="http://43.139.16.40:5006/docs" target="blank" type="blank">
                 <span
                   class="transition-opacity opacity-1 ml-3 text-sm font-normal text-dark-20"
                   :class="{ 'opacity-0': !isSBOpen && !isSBPin }"

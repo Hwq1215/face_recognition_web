@@ -9,8 +9,12 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 const resolvePath = (dir: string) => {
   return path.resolve(__dirname, 'src', dir)
 }
+module.exports = {
+  productionSourceMap: false
+}
 
 export default defineConfig({
+  
   plugins: [
     vue(),
     AutoImport({
@@ -69,5 +73,5 @@ export default defineConfig({
     sourcemap: true,
   },
   optimizeDeps: {},
-
+  
 })
